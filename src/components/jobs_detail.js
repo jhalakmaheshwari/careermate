@@ -3,12 +3,13 @@
  */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { updateDate, updateToDo } from '../actions/index'
+import { updateDate, updateToDo, updateResume } from '../actions/index'
 import { bindActionCreators} from 'redux';
 import { fetchJobs } from '../actions';
 import _ from 'lodash';
 
 class JobDetail extends Component{
+
     componentDidMount(){
         // this.props.fetchJobs();
         console.log('SEE')
@@ -38,9 +39,9 @@ class JobDetail extends Component{
                 }
             else{
                 if(this.state.idate != "")
-                    return this.state.idate
+                    return <div><span>Estimated Interview date: {this.state.idate}</span></div>
                 else
-                    return jDetail.interviewdate
+                    return <div><span>Estimated Interview date: {jDetail.interviewdate}</span></div>
             }
         }
         return (
@@ -48,34 +49,84 @@ class JobDetail extends Component{
         )
     }
 
+    deleteTodo(event, jDetail){
+        let toDoArr = []
+        if (jDetail.toDoTasks !== null && jDetail.toDoTasks !== undefined) {
+            toDoArr = jDetail.toDoTasks;
+        }
+        toDoArr.splice(event.target.id, 1);
+        console.log(toDoArr)
+        this.props.updateToDo(jDetail.id, toDoArr);
+        setTimeout(
+            function () {
+                document.getElementById(jDetail.id).click();
+            }
+            , 100)
+        document.getElementById('todoinput').value = "";
+    }
+
     newTodo(event, jDetail){
-        let code = (event.keyCode ? event.keyCode : event.which);
-        console.log(code);
-        if(code === 13) {
+        if(event.type === 'keypress') {
+            let code = (event.keyCode ? event.keyCode : event.which);
+            if (code === 13) {
+                let toDoArr = []
+                if (jDetail.toDoTasks !== null && jDetail.toDoTasks !== undefined) {
+                    toDoArr = jDetail.toDoTasks;
+                }
+                toDoArr.push(event.target.value);
+                console.log(toDoArr)
+                this.props.updateToDo(jDetail.id, toDoArr);
+                setTimeout(
+                    function () {
+                        document.getElementById(jDetail.id).click();
+                    }
+                    , 100)
+                event.target.value = "";
+            }
+        }
+        else if(event.type === 'click'){
             let toDoArr = []
-            if(jDetail.toDoTasks != null){
+            if (jDetail.toDoTasks !== null && jDetail.toDoTasks !== undefined) {
                 toDoArr = jDetail.toDoTasks;
             }
-            toDoArr.push(event.target.value);
+            toDoArr.push(document.getElementById('todoinput').value);
             console.log(toDoArr)
-            this.props.updateToDo(jDetail.id,toDoArr);
+            this.props.updateToDo(jDetail.id, toDoArr);
             setTimeout(
                 function () {
                     document.getElementById(jDetail.id).click();
                 }
-            , 100)
-            event.target.value="";
+                , 100)
+            document.getElementById('todoinput').value = "";
         }
     }
 
+    /*calendarClick(){
+        console.log('HEY');
+        addeventatc.register('button-dropdown-show', function(obj){
+            // Console log example
+            console.log('button-dropdown-show -> ' + obj.id);
+        });
+    }*/
+
     renderToDo(toDoTasks) {
-        return _.map(toDoTasks, task => {
+        var inc=0;
+        return _.map(toDoTasks.toDoTasks, task => {
             return (
                 <li className="list-group-item">
                     {task}
+                    <span className="glyphicon glyphicon-remove pull-right" id={inc++} onClick={(event) => this.deleteTodo(event, toDoTasks)}></span>
                 </li>
             );
         });
+    }
+
+    onSubmitResume(e, jDetail){
+        console.log("UPLOAD ");
+        e.preventDefault();
+        console.log(document.getElementById('resume').files[0]);
+        this.props.updateResume(jDetail.id, document.getElementById('resume').files[0]);
+        // console.log(values);
     }
 
     renderDetail(){
@@ -83,25 +134,29 @@ class JobDetail extends Component{
             if(this.props.fetchJobDetail.data != null) {
                 const jDetail = this.props.fetchJobDetail.data[0];
                 return (
-                    <div className="row">
-                        <h3 className="col-xs-12 list-group-item">{jDetail.company}</h3>
-                        <div className="col-xs-12 list-group-item">About</div>
+                    <div className="indent-outer">
+                        <h3 className="col-xs-12 center">{jDetail.company}</h3>
                         <div className="col-xs-12 list-group-item">{this.renderDate(jDetail)}</div>
-                        <div className="col-xs-12 list-group-item"><span className="glyphicon glyphicon-plus">Add to-do task</span>
-                        </div>
-                        <div className="col-xs-12">
-                            <input type="text" placeholder="Write new Todo and Enter" onKeyPress={(event) => this.newTodo(event, jDetail)}/>
-                        {jDetail.toDoTasks ?
-                            (<ul className="col-xs-12 list-group-item">{this.renderToDo(jDetail.toDoTasks)}</ul>)
+                        <br />
+                            <div className="col-xs-12 col-lg-6 input-group">
+                            <input type="text" className="form-control todoinp" id="todoinput" placeholder="Write new Todo and press enter" onKeyPress={(event) => this.newTodo(event, jDetail)} aria-describedby="basic-addon2"/>
+                                <span id="basic-addon2"><input className="center btn btn-ss btn-ss-alt btn-xs" type="submit" value="Add To-Do" onClick={(event) => this.newTodo(event, jDetail)} /></span>
+                            {jDetail.toDoTasks ?
+                            (<ul className="col-xs-12 ulpadding">{this.renderToDo(jDetail)}</ul>)
                             :
-                            (<span>No To-Do tasks</span>)
+                                (<span className="distance-it"><b>No To-Do tasks</b></span>)
                         }
                         </div>
-
+                        <div className="col-xs-12 list-group-item">
+                            <form type="submit" onSubmit={ (event) => this.onSubmitResume(event, jDetail) }>
+                                <input type="file" id="resume" accept="application/pdf" />
+                                <button type="submit">UPLOAD</button>
+                            </form>
+                        </div>
                     </div>
                 )
             }
-            return (<div>LOADING</div>)
+            return (<div></div>)
         };
 
 
@@ -118,7 +173,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-    return bindActionCreators({ updateDate: updateDate, fetchJobs: fetchJobs, updateToDo: updateToDo }, dispatch);
+    return bindActionCreators({ updateDate: updateDate, fetchJobs: fetchJobs, updateToDo: updateToDo, updateResume: updateResume }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(JobDetail);

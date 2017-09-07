@@ -6,7 +6,8 @@ export const CREATE_JOB = 'createJobForUser';
 export const FETCH_JOB = "fetch_job";
 export const FETCH_JOB_DETAIL = "fetch_job_detail";
 export const UPDATE_DATE = "update_date";
-
+export const UPDATE_TODO = "update_todo";
+export const UPDATE_RESUME = "update_resume";
 
 
 export function createJobForUser(values, callback) {
@@ -57,7 +58,28 @@ export function updateToDo(id, value) {
         toDoTasks: value
     });
     return {
-        type: UPDATE_DATE,
+        type: UPDATE_TODO,
+        payload: request
+    }
+}
+export function updateResume(id, value) {
+    console.log(value);
+    var formData = new FormData();
+    var resumeFile = value;
+    formData.append("file", resumeFile);
+    var request = axios.post("http://127.0.0.1:4000/updateresume/"+id, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+    /*
+
+
+    const request = axios.post("http://127.0.0.1:4000/updateresume/"+id,{
+        uploadResume: value
+    });*/
+    return {
+        type: UPDATE_RESUME,
         payload: request
     }
 }

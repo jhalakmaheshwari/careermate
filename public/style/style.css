@@ -31,3 +31,33 @@ body{
     background-color: #dcd9d9 !important;
     color: black !important;
 }
+.center{
+    text-align: center;
+    align-content: center;
+}
+.indent-outer{
+    margin: 0 auto;
+    overflow-wrap: break-word;
+    text-align: justify;
+    border: 2px solid #dcd9d9;
+    border-radius: 6px;
+    padding: 5px;
+}
+.distance-it{
+    padding-left: 7px;
+}
+.btn-ss-alt {
+    color: #fff !important;
+    background-color: #0690fa;
+    border-color: #0690fa;
+    padding: 7px 5px !important;
+}
+.todoinp{
+    width: 84% !important;
+}
+.ulpadding {
+    padding-top: 10px;
+}
+.jobs{
+    padding-right: 10px;
+}
